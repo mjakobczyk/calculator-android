@@ -11,13 +11,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.text.MessageFormat;
-
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
     private static final double ACCELERATION_THRESHOLD = 3;
-    private static final long TAP_INTERVAL = 250000000;
+    private static final long TAP_INTERVAL_IN_NS = 250000000;
 
     private SensorManager sensorManager;
     private Sensor sensor;
@@ -41,20 +39,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private void onTapRecognized() {
-        Log.d(TAG, "Tap recognized!");
-    }
-
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(final SensorEvent event) {
         double zAxisAcceleration = event.values[2];
         long timestamp = event.timestamp;
 
         if (Math.abs(zAxisAcceleration) > ACCELERATION_THRESHOLD
-                && timestamp - lastTimestamp >= TAP_INTERVAL) {
+                && timestamp - lastTimestamp >= TAP_INTERVAL_IN_NS) {
             onTapRecognized();
             lastTimestamp = timestamp;
         }
+    }
+
+    private void onTapRecognized() {
+        Log.d(TAG, "Tap recognized!");
     }
 
     @Override
@@ -70,5 +68,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    public void onAccuracyChanged(final Sensor sensor, final int accuracy) {}
 }
