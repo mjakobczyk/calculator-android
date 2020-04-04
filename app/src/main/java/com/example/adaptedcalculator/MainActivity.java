@@ -1,15 +1,18 @@
 package com.example.adaptedcalculator;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -20,6 +23,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor sensor;
     long lastTimestamp;
+    int firstNumber;
+    int secondNumber;
+    int operator;
+    int result;
+    int state;
+    CountDownTimer stateTimer;
+
+    TextView firstNumberTextView;
+    TextView secondNumberTextView;
+    TextView operatorTextView;
+    TextView resultTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +41,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         initializeAccelerometer();
+
+        firstNumber = secondNumber = 1;
+
+        firstNumberTextView = findViewById(R.id.firstNumber);
+        secondNumberTextView = findViewById(R.id.secondNumber);
+        operatorTextView = findViewById(R.id.operator);
+        resultTextView = findViewById(R.id.result);
+
+        refreshScreen();
+
+        stateTimer = new CountDownTimer(3000, 3000) {
+            @Override
+            public void onTick(long millisUntilFinished) {}
+
+            @Override
+            public void onFinish() {
+                state = (state + 1) % 4;
+                if (state == 0) {
+                    clearScreen();
+                } else if (state == 3) {
+                    switch (operator) {
+                        case 0:
+                            result = firstNumber + secondNumber;
+                            break;
+                        case 1:
+                            result = firstNumber - secondNumber;
+                            break;
+                        case 2:
+                            result = firstNumber * secondNumber;
+                            break;
+                    }
+                }
+
+                refreshScreen();
+                this.start();
+            }
+        }.start();
     }
 
     private void initializeAccelerometer() {
@@ -53,6 +104,70 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void onTapRecognized() {
         Log.d(TAG, "Tap recognized!");
+        stateTimer.cancel();
+        switch (state) {
+            case 0:
+                firstNumber = firstNumber % 9 + 1;
+                break;
+            case 1:
+                operator = (operator + 1) % 3;
+                break;
+            case 2:
+                secondNumber = secondNumber % 9 + 1;
+                break;
+        }
+
+        refreshScreen();
+        stateTimer.start();
+    }
+
+    private void refreshScreen() {
+        firstNumberTextView.setText(String.valueOf(firstNumber));
+        secondNumberTextView.setText(String.valueOf(secondNumber));
+        String operationSign = null;
+        switch (operator) {
+            case 0:
+                operationSign = "+";
+                break;
+            case 1:
+                operationSign = "-";
+                break;
+            case 2:
+                operationSign = "*";
+                break;
+        }
+        operatorTextView.setText(operationSign);
+
+        if (state == 3)
+            resultTextView.setText(String.valueOf(result));
+        else
+            resultTextView.setText("?");
+
+        firstNumberTextView.setTextColor(Color.BLACK);
+        secondNumberTextView.setTextColor(Color.BLACK);
+        operatorTextView.setTextColor(Color.BLACK);
+        resultTextView.setTextColor(Color.BLACK);
+
+        switch (state) {
+            case 0:
+                firstNumberTextView.setTextColor(Color.RED);
+                break;
+            case 1:
+                operatorTextView.setTextColor(Color.RED);
+                break;
+            case 2:
+                secondNumberTextView.setTextColor(Color.RED);
+                break;
+            case 3:
+                resultTextView.setTextColor(Color.GREEN);
+        }
+    }
+
+    private void clearScreen() {
+        firstNumber = 1;
+        secondNumber = 1;
+        operator = 0;
+        result = 0;
     }
 
     @Override
