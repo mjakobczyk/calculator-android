@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Adapted Calculator</string>
     <string name="no_accelerometer">No accelerometer found.</string>
+    <string name="isEqualSign">=</string>
 </resources>
